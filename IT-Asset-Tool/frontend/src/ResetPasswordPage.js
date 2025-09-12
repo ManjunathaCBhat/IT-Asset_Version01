@@ -4,8 +4,8 @@ import axios from 'axios';
 import { message } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL 
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 
 const ResetPasswordPage = () => {

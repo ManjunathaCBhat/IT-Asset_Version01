@@ -20,7 +20,7 @@ import {
 import axios from 'axios';
 import './styles.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL ;
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -46,7 +46,7 @@ const UserManagement = () => {
   // Fetch users from backend
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/users', {
+      const res = await axios.get(`${API_BASE_URL}/api/users`, {
         headers: getAuthHeader()
       });
       setUsers(res.data);
@@ -74,7 +74,7 @@ const UserManagement = () => {
   const handleAddUser = async (values) => {
     try {
       await axios.post(
-        'http://localhost:5000/api/users/create',
+        `${API_BASE_URL}/api/users/create`,
         {
           name: values.name,
           email: values.email,
@@ -122,7 +122,7 @@ const UserManagement = () => {
         payload.password = values.password;
       }
       await axios.put(
-        `http://localhost:5000/api/users/${editModal.user._id}`,
+        `${API_BASE_URL}/api/users/${editModal.user._id}`,
         payload,
         { headers: getAuthHeader() }
       );
@@ -143,7 +143,7 @@ const UserManagement = () => {
   // Delete user handler
   const handleDeleteUser = async (userId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/users/${userId}`, {
+      await axios.delete(`${API_BASE_URL}/api/users/${userId}`, {
         headers: getAuthHeader()
       });
       message.success('User deleted successfully');

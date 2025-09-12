@@ -19,7 +19,7 @@ import WelcomePage from './WelcomePage';
 import ResetPasswordPage from './ResetPasswordPage';
 import RemovedAssetsTable from './RemovedAssetsTable';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL ;
 
 // --- Role Banner Component ---
 const RoleBanner = ({ userRole }) => {

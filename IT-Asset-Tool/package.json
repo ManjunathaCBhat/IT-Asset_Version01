@@ -2,6 +2,7 @@
   "dependencies": {
     "@azure/msal-node": "^3.7.3",
     "@microsoft/microsoft-graph-client": "^3.0.7",
+    "express": "^5.1.0",
     "nodemailer": "^7.0.6",
     "react-scripts": "^0.0.0"
   },

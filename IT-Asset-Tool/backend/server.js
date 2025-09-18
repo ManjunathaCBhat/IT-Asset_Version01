@@ -50,8 +50,9 @@ transporter.verify(function (error, success) {
 const resetTokens = new Map();
 
 // --- Email function ---
+const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL;
 const sendResetEmail = async (email, resetToken) => {
-    const resetLink = `http://localhost:3000/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    const resetLink = `${FRONTEND_BASE_URL}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
     const subject = 'Password Reset Request - IT Asset Management';
     const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

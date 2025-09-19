@@ -1,12 +1,14 @@
 {
   "name": "it-asset-version01-root",
   "private": true,
-  "scripts": {
-    "install-all": "cd IT-Asset-Tool/backend && npm install && cd ../frontend && npm install",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "cd IT-Asset-Tool/backend && npm start",
-    "client": "cd IT-Asset-Tool/frontend && npm start"
-  },
+ "scripts": {
+  "start": "cd IT-Asset-Tool/backend && npm start",
+  "install-all": "cd IT-Asset-Tool/backend && npm install && cd ../frontend && npm install",
+  "dev": "concurrently \"npm run server\" \"npm run client\"",
+  "server": "cd IT-Asset-Tool/backend && npm start",
+  "client": "cd IT-Asset-Tool/frontend && npm start"
+}
+
   "devDependencies": {
     "concurrently": "^8.2.2"
   }

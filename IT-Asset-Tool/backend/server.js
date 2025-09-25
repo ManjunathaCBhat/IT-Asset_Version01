@@ -256,21 +256,23 @@ const ensureIndexes = async () => {
 const seedAdminUser = async () => {
     const ADMIN_EMAIL = 'admin@example.com';
     try {
-        const adminExists = await User.findOne({ email: ADMIN_EMAIL });
-        if (!adminExists) {
-            console.log(`No user found with email ${ADMIN_EMAIL}. Creating one...`);
-            const admin = new User({
-               name: 'Admin',
+        let admin = await User.findOne({ email: ADMIN_EMAIL });
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('password123', salt);
+        if (!admin) {
+            admin = new User({
+                name: 'Admin',
                 email: ADMIN_EMAIL,
-                password: 'password123',
+                password: hashedPassword,
                 role: 'Admin'
             });
-            const salt = await bcrypt.genSalt(10);
-            admin.password = await bcrypt.hash(admin.password, salt);
             await admin.save();
             console.log('Admin user created successfully!');
         } else {
-            console.log('Admin user already exists.');
+            admin.password = hashedPassword;
+            admin.role = 'Admin';
+            await admin.save();
+            console.log('Admin user updated successfully!');
         }
     } catch (error) {
         console.error('Error seeding admin user:', error);

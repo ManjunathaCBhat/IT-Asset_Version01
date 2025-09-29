@@ -7,6 +7,7 @@ import {
 } from 'antd';
 import { EyeOutlined, EditOutlined, DeleteOutlined, MoreOutlined, FilterOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import moment from 'moment';
+import config, { getEndpointUrl } from './config/config';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -151,7 +152,7 @@ const PageShell = ({
     // --- Modal and Action Handlers ---
     const handleDelete = async () => {
         try {
-            await axios.delete(`http://localhost:5000/api/equipment/${itemToDelete._id}`, { headers: getAuthHeader() });
+            await axios.delete(`${getEndpointUrl('EQUIPMENT')}/${itemToDelete._id}`, { headers: getAuthHeader() });
             message.success(`Successfully deleted: ${itemToDelete.model}`);
             fetchData();
         } catch (error) {
@@ -180,7 +181,7 @@ const PageShell = ({
                 ...values,
                 warrantyInfo: values.warrantyInfo ? values.warrantyInfo.format('YYYY-MM-DD') : null
             };
-            await axios.put(`http://localhost:5000/api/equipment/${selectedItem._id}`, finalValues, { headers: getAuthHeader() });
+            await axios.put(`${getEndpointUrl('EQUIPMENT')}/${selectedItem._id}`, finalValues, { headers: getAuthHeader() });
             message.success('Equipment updated successfully!');
             setIsEditModalOpen(false);
             fetchData();

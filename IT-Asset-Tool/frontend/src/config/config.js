@@ -3,7 +3,7 @@
 
 const config = {
   // API Configuration
-  API_BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000',
+  API_BASE_URL: process.env.REACT_APP_API_BASE_URL || 'https://it-asset-version01-804186663775.europe-west1.run.app',
   
   // Environment Detection
   ENVIRONMENT: process.env.NODE_ENV || 'development',

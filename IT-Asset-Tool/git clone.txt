@@ -1,0 +1,17 @@
+git clone 
+cd it-asset-tracker
+
+2. Set Up Backend
+cd asset-tracker-backend
+npm install
+node server.js
+
+3. Set Up Frontend
+cd asset-tracker-frontend
+npm install
+npm start
+
+4. login credentials
+
+admin@gmail.com
+password123

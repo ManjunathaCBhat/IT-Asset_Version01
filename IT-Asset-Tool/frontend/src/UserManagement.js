@@ -20,7 +20,7 @@ import {
 import axios from 'axios';
 import './styles.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL ;
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -46,7 +46,7 @@ const UserManagement = () => {
   // Fetch users from backend
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/users', {
+      const res = await axios.get('{config.API_BASE_URL}/api/users', {
         headers: getAuthHeader()
       });
       setUsers(res.data);

@@ -6,7 +6,7 @@ import axios from 'axios';
 import moment from 'moment';
 import './styles.css'; // Import your unified/app-wide styles
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 
 const { Title } = Typography;

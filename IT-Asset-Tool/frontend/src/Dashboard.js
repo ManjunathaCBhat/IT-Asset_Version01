@@ -8,11 +8,11 @@ import {
     MinusCircleOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
-
 import { message } from 'antd';
 import moment from 'moment';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+// Import shared configuration
+import config, { getEndpointUrl, debugLog } from './config/config';
 
 const { Title, Text } = Typography;
 
@@ -204,7 +204,7 @@ const Dashboard = () => {
         setLoading(true);
         setError(null);
         try {
-            const allAssetsRes = await axios.get(`${API_BASE_URL}/api/equipment`, {
+            const allAssetsRes = await axios.get(getEndpointUrl('EQUIPMENT'), {
                 headers: getAuthHeader(),
                 params: { _t: Date.now() }
             });

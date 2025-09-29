@@ -6,7 +6,7 @@ import { DeleteOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import './styles.css'; // Import CSS with your layout styles
 // import { validateSearchText } from './validation'; // Use if you want custom search validation
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL ;
 
 const { Title } = Typography;
 const { Search } = Input;

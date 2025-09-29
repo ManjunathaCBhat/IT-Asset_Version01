@@ -22,6 +22,10 @@ const MONGO_URI = process.env.MONGO_URI;
 // --- JWT Secret ---
 const JWT_SECRET = process.env.JWT_SECRET;
 
+console.log('Environment variables loaded:');
+console.log('MONGO_URI:', MONGO_URI ? 'Found' : 'MISSING');
+console.log('JWT_SECRET:', JWT_SECRET ? 'Found' : 'MISSING');
+
 // --- Nodemailer Setup ---
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -51,7 +55,7 @@ const resetTokens = new Map();
 
 // --- Email function ---
 const sendResetEmail = async (email, resetToken) => {
-    const resetLink = `http://localhost:3000/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    const resetLink = `${process.env.API_BASE_URL}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
     const subject = 'Password Reset Request - IT Asset Management';
     const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

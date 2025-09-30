@@ -5,8 +5,7 @@ import axios from 'axios';
 
 import moment from 'moment';
 import './styles.css'; // Import your unified/app-wide styles
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import config, { getEndpointUrl } from './config/config';
 
 
 const { Title } = Typography;
@@ -49,7 +48,7 @@ const RemovedAssetsTable = () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await axios.get(`${API_BASE_URL}/api/equipment/removed`, {
+            const response = await axios.get(`${getEndpointUrl('EQUIPMENT_REMOVED')}`, {
                 headers: getAuthHeader(),
             });
             // Debug: See data format
@@ -101,7 +100,7 @@ const RemovedAssetsTable = () => {
 
     const handleDelete = async (record) => {
         try {
-            await axios.delete(`${API_BASE_URL}/api/equipment/${record._id}`, {
+            await axios.delete(`${getEndpointUrl('EQUIPMENT')}/${record._id}`, {
                 headers: getAuthHeader(),
             });
             message.success('Asset deleted successfully');

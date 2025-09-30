@@ -9,8 +9,7 @@ import {
 } from '@ant-design/icons';
 import moment from 'moment';
 import './styles.css'; // <-- Import your common styles
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import config, { getEndpointUrl } from './config/config';
 
 const { Title } = Typography;
 
@@ -82,7 +81,7 @@ const DamagedProducts = ({ user }) => {
   // Fetch assets with status Damaged
   const fetchAssets = useCallback(async () => {
     try {
-  const response = await axios.get(`${API_BASE_URL}/api/equipment`, { headers: getAuthHeader() });
+  const response = await axios.get(`${getEndpointUrl('EQUIPMENT')}`, { headers: getAuthHeader() });
       const list = response.data.filter(a => a.status === 'Damaged');
       setData(list);
       setFilteredData(list);
@@ -129,7 +128,7 @@ const DamagedProducts = ({ user }) => {
     if (!assetToRepair) return;
     try {
       await axios.put(
-  `${API_BASE_URL}/api/equipment/${assetToRepair._id}`,
+  `${getEndpointUrl('EQUIPMENT')}/${assetToRepair._id}`,
         { status: 'In Stock' },
         { headers: getAuthHeader() }
       );
@@ -150,7 +149,7 @@ const DamagedProducts = ({ user }) => {
   const handleMoveToEWaste = async (asset) => {
     try {
       await axios.put(
-  `${API_BASE_URL}/api/equipment/${asset._id}`,
+  `${getEndpointUrl('EQUIPMENT')}/${asset._id}`,
         { status: 'E-Waste' },
         { headers: getAuthHeader() }
       );
@@ -165,7 +164,7 @@ const DamagedProducts = ({ user }) => {
   const handleRemoveFromDamaged = async (asset) => {
     try {
       await axios.put(
-  `${API_BASE_URL}/api/equipment/${asset._id}`,
+  `${getEndpointUrl('EQUIPMENT')}/${asset._id}`,
         { status: 'Removed' },
         { headers: getAuthHeader() }
       );

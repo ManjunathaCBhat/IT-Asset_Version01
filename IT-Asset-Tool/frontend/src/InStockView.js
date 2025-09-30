@@ -1,5 +1,3 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 
 import {
   Button,
@@ -8,7 +6,7 @@ import {
   Input,
   Row,
   Col,
-  message,
+  
   Space,
   Dropdown,
   Popconfirm,
@@ -30,7 +28,10 @@ import {
 import moment from 'moment';
 import './styles.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import { message } from 'antd';
+import { getEndpointUrl } from './config/config';
 
 const { Text, Title } = Typography;
 const { Option } = Select;
@@ -158,7 +159,7 @@ const InStockView = ({ user }) => {
   // Fetch in-stock assets from API
   const fetchInStockAssets = useCallback(async () => {
     try {
-  const response = await axios.get(`${API_BASE_URL}/api/equipment`, {
+  const response = await axios.get(`${getEndpointUrl('EQUIPMENT')}`, {
         headers: getAuthHeader(),
       });
       const inStockAssets = response.data.filter((item) => item.status === 'In Stock');
@@ -211,7 +212,7 @@ const InStockView = ({ user }) => {
       const values = await form.validateFields();
       const updatedData = { ...values, status: 'In Use' };
       await axios.put(
-  `${API_BASE_URL}/api/equipment/${selectedEquipment._id}`,
+  `${getEndpointUrl('EQUIPMENT')}/${selectedEquipment._id}`,
         updatedData,
         { headers: getAuthHeader() }
       );
@@ -235,7 +236,7 @@ const InStockView = ({ user }) => {
   const handleMoveStatus = async (record, newStatus) => {
     try {
       await axios.put(
-  `${API_BASE_URL}/api/equipment/${record._id}`,
+  `${getEndpointUrl('EQUIPMENT')}/${record._id}`,
         { status: newStatus },
         { headers: getAuthHeader() }
       );
@@ -277,7 +278,7 @@ const InStockView = ({ user }) => {
 
 
       await axios.put(
-  `${API_BASE_URL}/api/equipment/${selectedEditAsset._id}`,
+  `${getEndpointUrl('EQUIPMENT')}/${selectedEditAsset._id}`,
         updatedAsset,
         { headers: getAuthHeader() }
       );

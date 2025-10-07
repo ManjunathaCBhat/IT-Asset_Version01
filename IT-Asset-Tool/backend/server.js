@@ -8,6 +8,9 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 const moment = require('moment');
+const PDFDocument = require('pdfkit');
+const fs = require('fs-extra');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,7 +30,14 @@ console.log('MONGO_URI:', MONGO_URI ? 'Found' : 'MISSING');
 console.log('JWT_SECRET:', JWT_SECRET ? 'Found' : 'MISSING');
 
 // --- Nodemailer Setup ---
-const transporter = nodemailer.createTransport({
+console.log('Email Configuration:');
+console.log('SMTP_HOST:', process.env.SMTP_HOST ? 'Found' : 'MISSING');
+console.log('SMTP_PORT:', process.env.SMTP_PORT ? 'Found' : 'MISSING');
+console.log('SMTP_USER:', process.env.SMTP_USER ? 'Found' : 'MISSING');
+console.log('SMTP_PASS:', process.env.SMTP_PASS ? 'Found' : 'MISSING');
+console.log('SENDGRID_FROM_EMAIL:', process.env.SENDGRID_FROM_EMAIL ? 'Found' : 'MISSING');
+
+const transporter = nodemailer.createTransporter({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT),
     secure: process.env.SMTP_PORT == '465', // true for 465, false for other ports
@@ -281,6 +291,270 @@ const seedAdminUser = async () => {
         }
     } catch (error) {
         console.error('Error seeding admin user:', error);
+    }
+};
+
+// --- PDF Generation Function ---
+const generateAssetAssignmentPDF = async (equipment, assigneeInfo) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const doc = new PDFDocument({ margin: 50 });
+            const fileName = `asset-assignment-${equipment.assetId}-${Date.now()}.pdf`;
+            const filePath = path.join(__dirname, 'temp', fileName);
+            
+            // Ensure temp directory exists
+            fs.ensureDirSync(path.join(__dirname, 'temp'));
+            
+            // Pipe to file
+            const stream = fs.createWriteStream(filePath);
+            doc.pipe(stream);
+            
+            // Header
+            doc.fontSize(20).font('Helvetica-Bold')
+               .text('IT ASSET ASSIGNMENT ACKNOWLEDGEMENT', { align: 'center' });
+            
+            doc.moveDown(2);
+            
+            // Company info
+            doc.fontSize(14).font('Helvetica-Bold')
+               .text('Company: Cirrus Labs', 50, doc.y);
+            doc.fontSize(12).font('Helvetica')
+               .text(`Date: ${moment().format('MMMM DD, YYYY')}`, 50, doc.y + 20);
+            
+            doc.moveDown(2);
+            
+            // Asset Details Section
+            doc.fontSize(16).font('Helvetica-Bold')
+               .text('ASSET DETAILS', 50, doc.y);
+            doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).stroke();
+            
+            doc.moveDown(1);
+            doc.fontSize(12).font('Helvetica');
+            
+            const assetDetails = [
+                ['Asset ID:', equipment.assetId || 'N/A'],
+                ['Category:', equipment.category || 'N/A'],
+                ['Model:', equipment.model || 'N/A'],
+                ['Serial Number:', equipment.serialNumber || 'N/A'],
+                ['Status:', equipment.status || 'N/A'],
+                ['Location:', equipment.location || 'N/A'],
+                ['Warranty Info:', equipment.warrantyInfo ? moment(equipment.warrantyInfo).format('MMMM DD, YYYY') : 'N/A'],
+                ['Purchase Price:', equipment.purchasePrice ? `$${equipment.purchasePrice}` : 'N/A']
+            ];
+            
+            assetDetails.forEach(([label, value]) => {
+                doc.font('Helvetica-Bold').text(label, 70, doc.y, { width: 150, continued: true })
+                   .font('Helvetica').text(value, { width: 350 });
+                doc.moveDown(0.5);
+            });
+            
+            doc.moveDown(2);
+            
+            // Assignee Details Section
+            doc.fontSize(16).font('Helvetica-Bold')
+               .text('ASSIGNEE DETAILS', 50, doc.y);
+            doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).stroke();
+            
+            doc.moveDown(1);
+            doc.fontSize(12).font('Helvetica');
+            
+            const assigneeDetails = [
+                ['Name:', assigneeInfo.assigneeName || 'N/A'],
+                ['Position:', assigneeInfo.position || 'N/A'],
+                ['Department:', assigneeInfo.department || 'N/A'],
+                ['Email:', assigneeInfo.employeeEmail || 'N/A'],
+                ['Phone Number:', assigneeInfo.phoneNumber || 'N/A']
+            ];
+            
+            assigneeDetails.forEach(([label, value]) => {
+                doc.font('Helvetica-Bold').text(label, 70, doc.y, { width: 150, continued: true })
+                   .font('Helvetica').text(value, { width: 350 });
+                doc.moveDown(0.5);
+            });
+            
+            doc.moveDown(3);
+            
+            // Acknowledgement Section
+            doc.fontSize(16).font('Helvetica-Bold')
+               .text('ACKNOWLEDGEMENT', 50, doc.y);
+            doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).stroke();
+            
+            doc.moveDown(1);
+            doc.fontSize(11).font('Helvetica')
+               .text('I hereby acknowledge receipt of the above-mentioned IT asset and agree to the following terms:', 70, doc.y);
+            
+            doc.moveDown(1);
+            const terms = [
+                '• I will use this asset responsibly and for business purposes only',
+                '• I will not install unauthorized software or make unauthorized modifications',
+                '• I will report any damage, loss, or malfunction immediately to IT support',
+                '• I will return this asset in good condition upon termination of employment',
+                '• I understand I may be held liable for damages due to negligence or misuse',
+                '• I will comply with all company IT policies and procedures'
+            ];
+            
+            terms.forEach(term => {
+                doc.text(term, 70, doc.y, { width: 480 });
+                doc.moveDown(0.5);
+            });
+            
+            doc.moveDown(3);
+            
+            // Signature Section
+            doc.fontSize(12).font('Helvetica');
+            doc.text('Employee Signature: ________________________    Date: ________________', 70, doc.y);
+            doc.moveDown(2);
+            doc.text('IT Administrator: ________________________      Date: ________________', 70, doc.y);
+            
+            // Footer
+            doc.moveDown(4);
+            doc.fontSize(10).font('Helvetica')
+               .text('This document serves as official acknowledgement of IT asset assignment.', { align: 'center' })
+               .text('Please sign and return to IT Department within 2 business days.', { align: 'center' });
+            
+            doc.end();
+            
+            stream.on('finish', () => {
+                resolve({ filePath, fileName });
+            });
+            
+            stream.on('error', reject);
+            
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
+// --- SharePoint Upload Function ---
+const uploadToSharePoint = async (filePath, fileName, equipment) => {
+    try {
+        // Initialize Graph client
+        const msalInstance = new ConfidentialClientApplication({
+            auth: {
+                clientId: process.env.AZURE_CLIENT_ID,
+                clientSecret: process.env.AZURE_CLIENT_SECRET,
+                authority: `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`
+            }
+        });
+        
+        const clientCredentialRequest = {
+            scopes: ['https://graph.microsoft.com/.default']
+        };
+        
+        const response = await msalInstance.acquireTokenSilent(clientCredentialRequest);
+        const graphClient = Client.init({
+            authProvider: (done) => {
+                done(null, response.accessToken);
+            }
+        });
+        
+        // Read file
+        const fileBuffer = await fs.readFile(filePath);
+        
+        // Upload to SharePoint
+        const siteId = process.env.SHAREPOINT_SITE_ID || 'default';
+        const driveId = process.env.SHAREPOINT_DRIVE_ID || 'default';
+        const folderPath = '/Asset Assignments';
+        
+        const uploadPath = `/sites/${siteId}/drives/${driveId}/root:${folderPath}/${fileName}:/content`;
+        
+        const uploadResponse = await graphClient
+            .api(uploadPath)
+            .put(fileBuffer);
+            
+        console.log('PDF uploaded to SharePoint:', uploadResponse.webUrl);
+        return uploadResponse.webUrl;
+        
+    } catch (error) {
+        console.error('SharePoint upload failed:', error.message);
+        return null;
+    }
+};
+
+// --- Send Assignment Email with PDF ---
+const sendAssignmentEmail = async (equipment, assigneeInfo, pdfPath) => {
+    try {
+        console.log('📧 Preparing to send assignment email...');
+        console.log('📧 To:', assigneeInfo.employeeEmail);
+        console.log('📧 Asset ID:', equipment.assetId);
+        console.log('📧 PDF Path:', pdfPath);
+        
+        // Check if email configuration is available
+        if (!process.env.SMTP_HOST || !process.env.SMTP_PASS || !process.env.SENDGRID_FROM_EMAIL) {
+            console.error('❌ Missing email configuration. Check SMTP settings in .env file');
+            return false;
+        }
+        
+        const subject = `IT Asset Assignment: ${equipment.assetId} - ${equipment.model || 'Equipment'}`;
+        
+        const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2c3e50;">IT Asset Assignment Notification</h2>
+            
+            <p>Dear ${assigneeInfo.assigneeName},</p>
+            
+            <p>This email confirms that the following IT asset has been assigned to you:</p>
+            
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                <h3 style="color: #495057; margin-top: 0;">Asset Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 5px; font-weight: bold;">Asset ID:</td><td style="padding: 5px;">${equipment.assetId}</td></tr>
+                    <tr><td style="padding: 5px; font-weight: bold;">Category:</td><td style="padding: 5px;">${equipment.category}</td></tr>
+                    <tr><td style="padding: 5px; font-weight: bold;">Model:</td><td style="padding: 5px;">${equipment.model || 'N/A'}</td></tr>
+                    <tr><td style="padding: 5px; font-weight: bold;">Serial Number:</td><td style="padding: 5px;">${equipment.serialNumber || 'N/A'}</td></tr>
+                    <tr><td style="padding: 5px; font-weight: bold;">Location:</td><td style="padding: 5px;">${equipment.location || 'N/A'}</td></tr>
+                </table>
+            </div>
+            
+            <p><strong>Important:</strong> Please review the attached acknowledgement form carefully and return a signed copy to the IT Department within 2 business days.</p>
+            
+            <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h4 style="color: #856404; margin-top: 0;">Key Responsibilities:</h4>
+                <ul style="color: #856404;">
+                    <li>Use the asset responsibly for business purposes only</li>
+                    <li>Report any issues immediately to IT support</li>
+                    <li>Comply with all company IT policies</li>
+                    <li>Return the asset upon termination of employment</li>
+                </ul>
+            </div>
+            
+            <p>If you have any questions, please contact the IT Department.</p>
+            
+            <p>Best regards,<br>IT Department<br>Cirrus Labs</p>
+            
+            <hr style="margin: 30px 0;">
+            <p style="font-size: 12px; color: #6c757d;">
+                This is an automated notification. Please do not reply to this email.
+            </p>
+        </div>
+        `;
+        
+        const mailOptions = {
+            from: process.env.SENDGRID_FROM_EMAIL,
+            to: assigneeInfo.employeeEmail,
+            subject: subject,
+            html: htmlContent,
+            attachments: [
+                {
+                    filename: path.basename(pdfPath),
+                    path: pdfPath,
+                    contentType: 'application/pdf'
+                }
+            ]
+        };
+        
+        console.log('📧 Sending email with SendGrid...');
+        const result = await transporter.sendMail(mailOptions);
+        console.log('✅ Assignment email sent successfully! Message ID:', result.messageId);
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Failed to send assignment email:');
+        console.error('Error:', error.message);
+        console.error('Code:', error.code);
+        console.error('Response:', error.response);
+        return false;
     }
 };
 
@@ -857,6 +1131,10 @@ app.put('/api/equipment/:id', [auth, requireRole(['Admin', 'Editor'])], async (r
     }
 
     try {
+        // Get the original equipment to compare changes
+        const originalEquipment = await Equipment.findById(req.params.id);
+        if (!originalEquipment) return res.status(404).json({ message: 'Equipment not found' });
+        
         const updatedEquipment = await Equipment.findByIdAndUpdate(
             req.params.id,
             updateData,
@@ -864,6 +1142,63 @@ app.put('/api/equipment/:id', [auth, requireRole(['Admin', 'Editor'])], async (r
         );
 
         if (!updatedEquipment) return res.status(404).json({ message: 'Equipment not found' });
+        
+        // Check if asset is being assigned (status changed to 'In Use' and has assignee info)
+        const isNewAssignment = (
+            updateData.status === 'In Use' && 
+            updateData.assigneeName && 
+            updateData.employeeEmail &&
+            (originalEquipment.status !== 'In Use' || originalEquipment.assigneeName !== updateData.assigneeName)
+        );
+        
+        console.log('🔍 Assignment Detection:');
+        console.log('Status:', updateData.status);
+        console.log('Assignee Name:', updateData.assigneeName);
+        console.log('Employee Email:', updateData.employeeEmail);
+        console.log('Original Status:', originalEquipment.status);
+        console.log('Original Assignee:', originalEquipment.assigneeName);
+        console.log('Is New Assignment:', isNewAssignment);
+        
+        if (isNewAssignment) {
+            console.log('🎯 New asset assignment detected! Starting email process...');
+            
+            // Generate PDF and send email asynchronously (don't block the response)
+            setImmediate(async () => {
+                try {
+                    const assigneeInfo = {
+                        assigneeName: updateData.assigneeName,
+                        position: updateData.position,
+                        department: updateData.department,
+                        employeeEmail: updateData.employeeEmail,
+                        phoneNumber: updateData.phoneNumber
+                    };
+                    
+                    // Generate PDF
+                    const { filePath, fileName } = await generateAssetAssignmentPDF(updatedEquipment, assigneeInfo);
+                    console.log('PDF generated:', fileName);
+                    
+                    // Send email with PDF attachment
+                    const emailSent = await sendAssignmentEmail(updatedEquipment, assigneeInfo, filePath);
+                    
+                    if (emailSent) {
+                        console.log('✅ Assignment email sent successfully to:', assigneeInfo.employeeEmail);
+                    } else {
+                        console.error('❌ Failed to send assignment email to:', assigneeInfo.employeeEmail);
+                    }
+                    
+                    // Clean up temporary PDF file after a delay
+                    setTimeout(() => {
+                        fs.remove(filePath).catch(err => 
+                            console.error('Error removing temp PDF:', err.message)
+                        );
+                    }, 300000); // Delete after 5 minutes
+                    
+                } catch (error) {
+                    console.error('Error in assignment notification process:', error.message);
+                }
+            });
+        }
+        
         res.json(updatedEquipment);
     } catch (err) {
         if (err.name === 'ValidationError') {

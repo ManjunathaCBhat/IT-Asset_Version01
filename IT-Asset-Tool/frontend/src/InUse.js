@@ -14,7 +14,7 @@ import {
 } from '@ant-design/icons';
 import moment from 'moment';
 import './styles.css';
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL ;
+import config, { getEndpointUrl } from './config/config';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -266,7 +266,7 @@ const InUse = ({ user }) => {
 
   const fetchInUseAssets = useCallback(async () => {
     try {
-  const response = await axios.get(`${API_BASE_URL}/api/equipment`, { headers: getAuthHeader() });
+  const response = await axios.get(`${getEndpointUrl('EQUIPMENT')}`, { headers: getAuthHeader() });
       const inUseAssets = response.data.filter((item) => item.status === 'In Use');
       setData(inUseAssets);
       setFilteredData(inUseAssets);
@@ -351,7 +351,7 @@ const InUse = ({ user }) => {
         if (payloadToSend[k] === "") payloadToSend[k] = null;
 
       await axios.put(
-  `${API_BASE_URL}/api/equipment/${selectedAsset._id}`,
+  `${getEndpointUrl('EQUIPMENT')}/${selectedAsset._id}`,
         payloadToSend,
         { headers: getAuthHeader() }
       );
@@ -385,7 +385,7 @@ const InUse = ({ user }) => {
   const handleMoveStatus = async (record, newStatus) => {
     try {
       await axios.put(
-  `${API_BASE_URL}/api/equipment/${record._id}`,
+  `${getEndpointUrl('EQUIPMENT')}/${record._id}`,
         { status: newStatus },
         { headers: getAuthHeader() }
       );

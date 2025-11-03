@@ -37,7 +37,7 @@ console.log('SMTP_USER:', process.env.SMTP_USER ? 'Found' : 'MISSING');
 console.log('SMTP_PASS:', process.env.SMTP_PASS ? 'Found' : 'MISSING');
 console.log('SENDGRID_FROM_EMAIL:', process.env.SENDGRID_FROM_EMAIL ? 'Found' : 'MISSING');
 
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT),
     secure: process.env.SMTP_PORT == '465', // true for 465, false for other ports
